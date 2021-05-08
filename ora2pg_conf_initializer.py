@@ -35,10 +35,11 @@ def populate_env_values(settings):
     def is_required_or_optional_value_supplied(optional, env_value):
         return not optional or (optional and env_value is not None)
 
-    settings_with_env_values = [(key, value, optional, os.getenv(key)) for (key, value, optional) in settings]
+    def with_env_values(settings_to_enrich):
+        return [(key, value, optional, os.getenv(key)) for (key, value, optional) in settings_to_enrich]
 
     return [(key, choose_value(value, env_value)) for (key, value, optional, env_value) in
-            settings_with_env_values if is_required_or_optional_value_supplied(optional, env_value)]
+            with_env_values(settings) if is_required_or_optional_value_supplied(optional, env_value)]
 
 
 def read_reference_settings(path):
