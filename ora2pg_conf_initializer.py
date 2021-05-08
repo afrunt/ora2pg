@@ -3,15 +3,6 @@ import sys
 from os.path import exists
 
 
-def log_info(message):
-    print(message)
-
-
-def read_all_lines_from_file(path):
-    with open(path, "r") as file:
-        return file.readlines()
-
-
 def only_lines_with_settings(lines):
     filtered_lines = []
 
@@ -54,15 +45,6 @@ def lines_to_settings(lines):
     return settings
 
 
-def print_default_docker_env(settings):
-    non_commented_settings = list(filter(lambda setting: not setting[2], settings))
-
-    env_variables_str = " \\\n".join(
-        list(map(lambda setting: "   " + setting[0] + "=\"" + setting[1] + "\"", non_commented_settings)))
-
-    log_info(f"ENV \\\n{env_variables_str}")
-
-
 def write_config_file(path, settings):
     def choose_value(default, env_value):
         if env_value is None:
@@ -76,41 +58,42 @@ def write_config_file(path, settings):
 
     prepared_settings_to_set_up = map(lambda s: (s[0], choose_value(s[1], s[3])), settings_to_set_up)
 
-    log_info(f"Writing configuration to {path}")
+    print(f"Writing configuration to {path}")
 
     with open(path, "w") as file:
         for (key, value) in prepared_settings_to_set_up:
-            log_info(f"{key} {value}")
+            print(f"{key} -> {value}")
             file.write(f"{key} {value}\n")
 
     pass
 
 
 def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location="/etc-ora2pg/ora2pg.conf.dist"):
-    log_info(f"Initializing the ora2pg configuration. Path: {conf_location}")
+    print(f"Initializing the ora2pg configuration. Path: {conf_location}")
 
     if exists(conf_location):
-        log_info(f"{conf_location} already exists, so nothing to do here, because someone already created the file")
+        print(f"{conf_location} already exists, so nothing to do here, because someone already created the file")
         exit(0)
 
     if not exists(dist_conf_location):
-        log_info(f"Error. Cannot find the reference configuration file {dist_conf_location}")
+        print(f"Error. Cannot find the reference configuration file {dist_conf_location}")
         exit(1)
 
-    log_info(f"Reference configuration file found. Path: {dist_conf_location}")
-    ref_conf_lines = read_all_lines_from_file(dist_conf_location)
+    print(f"Reference configuration file found. Path: {dist_conf_location}")
+
+    with open(dist_conf_location, "r") as file:
+        ref_conf_lines = file.readlines()
 
     settings = lines_to_settings(only_lines_with_settings(ref_conf_lines))
-    # print_default_docker_env(settings)
 
-    log_info("Reference configuration file was successfully read")
+    print("Reference configuration file was successfully read")
 
     write_config_file(conf_location, settings)
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        log_info("Locations of ora2pg.conf and ora2pg.conf.dist files should be specified as command-line arguments")
+        print("Locations of ora2pg.conf and ora2pg.conf.dist files should be specified as command-line arguments")
         exit(1)
 
     initialize_ora2pg_conf(conf_location=sys.argv[1], dist_conf_location=sys.argv[2])
