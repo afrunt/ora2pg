@@ -46,8 +46,8 @@ def lines_to_settings(lines):
 
 
 def populate_env_values(settings):
-    def choose_value(default, env_value):
-        return default if env_value is None else env_value
+    def choose_value(value, env_value):
+        return value if env_value is None else env_value
 
     def required_or_optional_value_supplied(optional, env_value):
         return not optional or (optional and env_value is not None)
