@@ -74,7 +74,7 @@ def write_config_file(path, settings):
 
     settings_to_set_up = filter(lambda s: not s[2] or (s[2] and s[3] is not None), settings_with_env_values)
 
-    prepared_settings_to_set_up = list(map(lambda s: (s[0], choose_value(s[1], s[3])), settings_to_set_up))
+    prepared_settings_to_set_up = map(lambda s: (s[0], choose_value(s[1], s[3])), settings_to_set_up)
 
     log_info(f"Writing configuration to {path}")
 
