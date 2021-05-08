@@ -4,48 +4,28 @@ from os.path import exists
 
 
 def only_lines_with_settings(lines):
-    filtered_lines = []
+    def is_setting(config_line):
+        return len(config_line) > 2 and not [prefix for prefix in ["# ", "#-", "##", "#WHERE", "#in"] if config_line.startswith(prefix)]
 
-    def not_just_a_comment(config_line):
-        result = True
-        for prefix in ["# ", "#-", "##", "#WHERE", "#in"]:
-            result = result and not str(config_line).startswith(prefix)
+    def remove_comments(config_line):
+        return remove_comments(config_line[:config_line.rfind("#")]).strip() if config_line.count("#") > 1 else config_line.strip()
 
-        return result
+    stripped_lines = [' '.join(str(line).strip().split()) for line in lines]
 
-    def clean_up_line(config_line):
-        config_line_str = str(config_line)
-        if config_line_str.count("#") > 1:
-            return clean_up_line(config_line_str[:config_line_str.rfind("#")]).strip()
-        else:
-            return config_line_str.strip()
-
-    for line in lines:
-        line_str = ' '.join(str(line).strip().split())
-        if not len(line_str) < 2 and not_just_a_comment(line_str):
-            filtered_lines.append(clean_up_line(line_str))
-
-    return filtered_lines
+    return [remove_comments(line) for line in stripped_lines if is_setting(line)]
 
 
 def lines_to_settings(lines):
-    def line_to_setting(line_str):
-        optional = False
-        if line_str.startswith("#"):
-            optional = True
-            line_str = line_str[1:]
-
-        if line_str.find(" ") == -1:
-            return line_str.strip(), "", optional
-        else:
-            return line_str[:line_str.find(" ")], line_str[line_str.find(" ") + 1:], optional
+    def line_to_setting(line):
+        optional = line.startswith("#")
+        line = line.replace("#", "")
+        return (line.strip(), "", optional) if line.find(" ") == -1 else (line[:line.find(" ")], line[line.find(" ") + 1:], optional)
 
     return [line_to_setting(str(line)) for line in lines]
 
 
 def populate_env_values(settings):
-    def choose_value(value, env_value):
-        return value if env_value is None else env_value
+    def choose_value(value, env_value): return value if env_value is None else env_value
 
     def required_or_optional_value_supplied(optional, env_value):
         return not optional or (optional and env_value is not None)
@@ -54,6 +34,11 @@ def populate_env_values(settings):
 
     return [(key, choose_value(value, env_value)) for (key, value, optional, env_value) in
             settings_with_env_values if required_or_optional_value_supplied(optional, env_value)]
+
+
+def read_reference_settings(path):
+    with open(path, "r") as file:
+        return lines_to_settings(only_lines_with_settings(file.readlines()))
 
 
 def write_config_file(path, settings):
@@ -78,10 +63,7 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     print(f"Reference configuration file found. Path: {dist_conf_location}")
 
-    with open(dist_conf_location, "r") as file:
-        ref_conf_lines = only_lines_with_settings(file.readlines())
-
-    settings = populate_env_values(lines_to_settings(ref_conf_lines))
+    settings = populate_env_values(read_reference_settings(dist_conf_location))
 
     print("Reference configuration file was successfully read")
 
