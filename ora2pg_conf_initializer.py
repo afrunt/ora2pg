@@ -14,9 +14,10 @@ def only_lines_with_settings(lines):
     def remove_comments(config_line):
         return remove_comments(config_line[:config_line.rfind("#")]).strip() if config_line.count("#") > 1 else config_line.strip()
 
-    stripped_lines = [' '.join(str(line).strip().split()) for line in lines]
+    def strip_lines(lines_to_strip):
+        return [' '.join(str(line).strip().split()) for line in lines_to_strip]
 
-    return [remove_comments(line) for line in stripped_lines if is_setting(line)]
+    return [remove_comments(line) for line in strip_lines(lines) if is_setting(line)]
 
 
 def lines_to_settings(lines):
