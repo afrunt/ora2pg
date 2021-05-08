@@ -110,8 +110,6 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     write_config_file(conf_location, settings)
 
-    log_info(sys.argv)
-
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
