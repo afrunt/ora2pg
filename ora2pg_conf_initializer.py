@@ -52,11 +52,10 @@ def write_config_file(path, settings):
         else:
             return default
 
-    settings_with_env_values = map(lambda s: (s[0], s[1], s[2], os.getenv(s[0])), settings)
+    settings_with_env_values = [(key, value, commented, os.getenv(key)) for key, value, commented in settings]
 
-    settings_to_set_up = filter(lambda s: not s[2] or (s[2] and s[3] is not None), settings_with_env_values)
-
-    prepared_settings_to_set_up = map(lambda s: (s[0], choose_value(s[1], s[3])), settings_to_set_up)
+    prepared_settings_to_set_up = [(key, choose_value(value, env_value)) for key, value, commented, env_value in
+                                   settings_with_env_values if (not commented or (commented and env_value is not None))]
 
     print(f"Writing configuration to {path}")
 
