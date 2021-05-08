@@ -45,7 +45,7 @@ def lines_to_settings(lines):
     return settings
 
 
-def write_config_file(path, settings):
+def populate_env_values(settings):
     def choose_value(default, env_value):
         if env_value is None:
             return default
@@ -54,13 +54,15 @@ def write_config_file(path, settings):
 
     settings_with_env_values = [(key, value, commented, os.getenv(key)) for key, value, commented in settings]
 
-    prepared_settings_to_set_up = [(key, choose_value(value, env_value)) for key, value, commented, env_value in
-                                   settings_with_env_values if (not commented or (commented and env_value is not None))]
+    return [(key, choose_value(value, env_value)) for key, value, commented, env_value in
+            settings_with_env_values if (not commented or (commented and env_value is not None))]
 
+
+def write_config_file(path, settings):
     print(f"Writing configuration to {path}")
 
     with open(path, "w") as file:
-        for (key, value) in prepared_settings_to_set_up:
+        for (key, value) in settings:
             print(f"{key} -> {value}")
             file.write(f"{key} {value}\n")
 
@@ -81,9 +83,9 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
     print(f"Reference configuration file found. Path: {dist_conf_location}")
 
     with open(dist_conf_location, "r") as file:
-        ref_conf_lines = file.readlines()
+        ref_conf_lines = only_lines_with_settings(file.readlines())
 
-    settings = lines_to_settings(only_lines_with_settings(ref_conf_lines))
+    settings = populate_env_values(lines_to_settings(ref_conf_lines))
 
     print("Reference configuration file was successfully read")
 
