@@ -29,20 +29,18 @@ def only_lines_with_settings(lines):
 
 
 def lines_to_settings(lines):
-    settings = []
-    for line in lines:
+    def line_to_setting(line_str):
         optional = False
-        line_str = str(line)
         if line_str.startswith("#"):
             optional = True
             line_str = line_str[1:]
 
         if line_str.find(" ") == -1:
-            settings.append((line_str.strip(), "", optional))
+            return line_str.strip(), "", optional
         else:
-            settings.append((line_str[:line_str.find(" ")], line_str[line_str.find(" ") + 1:], optional))
+            return line_str[:line_str.find(" ")], line_str[line_str.find(" ") + 1:], optional
 
-    return settings
+    return [line_to_setting(str(line)) for line in lines]
 
 
 def populate_env_values(settings):
@@ -65,8 +63,6 @@ def write_config_file(path, settings):
         for (key, value) in settings:
             print(f"{key} -> {value}")
             file.write(f"{key} {value}\n")
-
-    pass
 
 
 def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location="/etc-ora2pg/ora2pg.conf.dist"):
