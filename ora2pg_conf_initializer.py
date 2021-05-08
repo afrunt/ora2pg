@@ -31,31 +31,31 @@ def only_lines_with_settings(lines):
 def lines_to_settings(lines):
     settings = []
     for line in lines:
-        commented = False
+        optional = False
         line_str = str(line)
         if line_str.startswith("#"):
-            commented = True
+            optional = True
             line_str = line_str[1:]
 
         if line_str.find(" ") == -1:
-            settings.append((line_str.strip(), "", commented))
+            settings.append((line_str.strip(), "", optional))
         else:
-            settings.append((line_str[:line_str.find(" ")], line_str[line_str.find(" ") + 1:], commented))
+            settings.append((line_str[:line_str.find(" ")], line_str[line_str.find(" ") + 1:], optional))
 
     return settings
 
 
 def populate_env_values(settings):
     def choose_value(default, env_value):
-        if env_value is None:
-            return default
-        else:
-            return default
+        return default if env_value is None else env_value
 
-    settings_with_env_values = [(key, value, commented, os.getenv(key)) for key, value, commented in settings]
+    def required_or_optional_value_supplied(optional, env_value):
+        return not optional or (optional and env_value is not None)
 
-    return [(key, choose_value(value, env_value)) for key, value, commented, env_value in
-            settings_with_env_values if (not commented or (commented and env_value is not None))]
+    settings_with_env_values = [(key, value, optional, os.getenv(key)) for (key, value, optional) in settings]
+
+    return [(key, choose_value(value, env_value)) for (key, value, optional, env_value) in
+            settings_with_env_values if required_or_optional_value_supplied(optional, env_value)]
 
 
 def write_config_file(path, settings):
