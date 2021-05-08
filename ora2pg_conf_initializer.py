@@ -60,11 +60,11 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     if exists(conf_location):
         print(f"{conf_location} already exists, so nothing to do here, because someone already created the file")
-        exit(0)
+        return 0
 
     if not exists(dist_conf_location):
         print(f"Error. Cannot find the reference configuration file {dist_conf_location}")
-        exit(1)
+        return 1
 
     print(f"Reference configuration file found. Path: {dist_conf_location}")
 
@@ -74,6 +74,8 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     write_config_file(conf_location, settings)
 
+    return 0
+
 
 if __name__ == '__main__':
     started_at = current_time_millis()
@@ -82,6 +84,8 @@ if __name__ == '__main__':
         print("Locations of ora2pg.conf and ora2pg.conf.dist files should be specified as command-line arguments")
         exit(1)
 
-    initialize_ora2pg_conf(conf_location=sys.argv[1], dist_conf_location=sys.argv[2])
+    exit_code = initialize_ora2pg_conf(conf_location=sys.argv[1], dist_conf_location=sys.argv[2])
 
     print("Elapsed {}ms".format(current_time_millis() - started_at))
+
+    exit(exit_code)
