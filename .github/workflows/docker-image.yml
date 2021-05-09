@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: afrunt/ora2pg:latest
+          tags: afrunt/ora2pg:latest,afrunt/ora2pg:21.1
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
