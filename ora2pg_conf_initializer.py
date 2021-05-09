@@ -15,7 +15,7 @@ def only_lines_with_settings(lines):
         return remove_comments(config_line[:config_line.rfind("#")]).strip() if config_line.count("#") > 1 else config_line.strip()
 
     def clear_lines(lines_to_clear):
-        return [' '.join(str(line).strip().split()) for line in lines_to_clear]
+        return [' '.join(line.strip().split()) for line in lines_to_clear]
 
     return [remove_comments(line) for line in clear_lines(lines) if is_setting(line)]
 
