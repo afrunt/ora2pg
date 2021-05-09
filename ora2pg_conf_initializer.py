@@ -11,11 +11,11 @@ def only_lines_with_settings(lines):
     def is_setting(config_line):
         return len(config_line) > 2 and not [prefix for prefix in ["# ", "#-", "##", "#WHERE", "#in"] if config_line.startswith(prefix)]
 
-    def remove_comments(config_line):
-        return remove_comments(config_line[:config_line.rfind("#")]).strip() if config_line.count("#") > 1 else config_line.strip()
-
     def clear_lines(lines_to_clear):
         return [' '.join(line.strip().split()) for line in lines_to_clear]
+
+    def remove_comments(config_line):
+        return remove_comments(config_line[:config_line.rfind("#")]).strip() if config_line.count("#") > 1 else config_line.strip()
 
     return [remove_comments(line) for line in clear_lines(lines) if is_setting(line)]
 
