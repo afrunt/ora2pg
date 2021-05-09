@@ -4,10 +4,25 @@ import time
 from os.path import exists
 
 
-def current_time_millis(): return round(time.time() * 1000)
+def current_time_millis():
+    return round(time.time() * 1000)
 
 
-def only_lines_with_settings(lines):
+class Ora2PgSetting:
+    def __init__(self, name, default_value, optional):
+        self.name = name
+        self.default_value = default_value
+        self.optional = optional
+        self.env_value = os.getenv(name)
+
+    def is_required_or_env_value_supplied(self):
+        return not self.optional or (self.optional and self.env_value is not None)
+
+    def get_value(self):
+        return self.env_value if self.env_value is not None else self.default_value
+
+
+def filter_lines_with_settings(lines):
     def is_setting(config_line):
         return len(config_line) > 2 and not [prefix for prefix in ["# ", "#-", "##", "#WHERE", "#in"] if config_line.startswith(prefix)]
 
@@ -20,40 +35,25 @@ def only_lines_with_settings(lines):
     return [remove_comments(line) for line in map(clear_line, lines) if is_setting(line)]
 
 
-def lines_to_settings(lines):
+def read_reference_settings(path):
     def line_to_setting(line):
         optional = line.startswith("#")
         line = line.replace("#", "")
-        return (line.strip(), "", optional) if line.find(" ") == -1 else (line[:line.find(" ")], line[line.find(" ") + 1:], optional)
+        name = line.strip() if line.find(" ") == -1 else line[:line.find(" ")]
+        value = "" if line.find(" ") == -1 else line[line.find(" ") + 1:]
+        return Ora2PgSetting(name, value, optional)
 
-    return [line_to_setting(str(line)) for line in lines]
-
-
-def populate_env_values(settings):
-    def choose_value(value, env_value): return value if env_value is None else env_value
-
-    def is_required_or_optional_value_supplied(optional, env_value):
-        return not optional or (optional and env_value is not None)
-
-    def with_env_values(settings_to_enrich):
-        return [(key, value, optional, os.getenv(key)) for (key, value, optional) in settings_to_enrich]
-
-    return [(key, choose_value(value, env_value)) for (key, value, optional, env_value) in
-            with_env_values(settings) if is_required_or_optional_value_supplied(optional, env_value)]
-
-
-def read_reference_settings(path):
     with open(path, "r") as file:
-        return lines_to_settings(only_lines_with_settings(file.readlines()))
+        return list(map(line_to_setting, filter_lines_with_settings(file.readlines())))
 
 
 def write_config_file(path, settings):
     print(f"Writing configuration to {path}")
 
     with open(path, "w") as file:
-        for (key, value) in settings:
-            print(f"{key} {value}")
-            file.write(f"{key} {value}\n")
+        for setting in settings:
+            print("{} {}".format(setting.name, setting.get_value()))
+            file.write("{} {}\n".format(setting.name, setting.get_value()))
 
 
 def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location="/etc-ora2pg/ora2pg.conf.dist"):
@@ -69,11 +69,11 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     print(f"Reference configuration file found. Path: {dist_conf_location}")
 
-    settings = populate_env_values(read_reference_settings(dist_conf_location))
+    settings = read_reference_settings(dist_conf_location)
 
     print("Reference configuration file was successfully read")
 
-    write_config_file(conf_location, settings)
+    write_config_file(conf_location, [s for s in settings if s.is_required_or_env_value_supplied()])
 
     return 0
 
