@@ -73,7 +73,7 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
     print("Reference configuration file was successfully read")
 
-    write_config_file(conf_location, [s for s in settings if s.is_required_or_env_value_supplied()])
+    write_config_file(conf_location, list(filter(lambda s: s.is_required_or_env_value_supplied(), settings)))
 
     return 0
 
