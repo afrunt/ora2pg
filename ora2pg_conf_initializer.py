@@ -103,23 +103,22 @@ def initialize_ora2pg_conf(conf_location, dist_conf_location):
     return EXIT_CODE_OK
 
 
-def main():
+def main(conf_location, dist_conf_location):
     """ Main function """
+
+    try:
+        started_at = current_time_millis()
+        exit_code = initialize_ora2pg_conf(conf_location, dist_conf_location)
+    except OSError:
+        exit_code = EXIT_CODE_ERROR
+    finally:
+        print("Elapsed {}ms".format(current_time_millis() - started_at))
+        return exit_code
+
+
+if __name__ == '__main__':
     if len(sys.argv) != 3:
         print("Locations of ora2pg.conf and ora2pg.conf.dist files should be specified as "
               "command-line arguments")
         sys.exit(EXIT_CODE_ERROR)
-
-    try:
-        started_at = current_time_millis()
-        exit_code = initialize_ora2pg_conf(conf_location=sys.argv[1],
-                                           dist_conf_location=sys.argv[2])
-    except:
-        exit_code = EXIT_CODE_ERROR
-    finally:
-        print("Elapsed {}ms".format(current_time_millis() - started_at))
-        sys.exit(exit_code)
-
-
-if __name__ == '__main__':
-    main()
+    sys.exit(main(sys.argv[1], sys.argv[2]))
