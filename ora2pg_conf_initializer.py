@@ -15,6 +15,9 @@ class Ora2PgSetting:
         self.optional = optional
         self.env_value = os.getenv(name)
 
+    def __str__(self):
+        return f"{self.name} {self.get_value()}"
+
     def is_required_or_env_value_supplied(self):
         return not self.optional or (self.optional and self.env_value is not None)
 
@@ -52,8 +55,8 @@ def write_config_file(path, settings):
 
     with open(path, "w") as file:
         for setting in settings:
-            print("{} {}".format(setting.name, setting.get_value()))
-            file.write("{} {}\n".format(setting.name, setting.get_value()))
+            print(setting)
+            file.write("{}\n".format(setting))
 
 
 def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location="/etc-ora2pg/ora2pg.conf.dist"):
