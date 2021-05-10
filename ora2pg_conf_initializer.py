@@ -73,7 +73,7 @@ def write_config_file(path, settings):
 
     with open(path, "w") as file:
         for setting in settings:
-            print(setting)
+            # print(setting)
             file.write(f"{setting.name} {setting.get_value()}\n")
 
 

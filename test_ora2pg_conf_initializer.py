@@ -57,3 +57,7 @@ class InitializerTest(unittest.TestCase):
         self.remove_file(TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
         exit_code = i.main(TEST_ORA2PG_CONFIG_FILE_PATH, TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
         self.assertEqual(exit_code, i.EXIT_CODE_ERROR)
+
+
+if __name__ == '__main__':
+    unittest.main()
