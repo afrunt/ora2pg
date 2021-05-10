@@ -56,7 +56,7 @@ def write_config_file(path, settings):
     with open(path, "w") as file:
         for setting in settings:
             print(setting)
-            file.write("{}\n".format(setting))
+            file.write(f"{setting.name} {setting.get_value()}\n")
 
 
 def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location="/etc-ora2pg/ora2pg.conf.dist"):
@@ -82,14 +82,16 @@ def initialize_ora2pg_conf(conf_location="/etc/ora2pg.conf", dist_conf_location=
 
 
 if __name__ == '__main__':
-    started_at = current_time_millis()
 
     if len(sys.argv) != 3:
         print("Locations of ora2pg.conf and ora2pg.conf.dist files should be specified as command-line arguments")
         exit(1)
 
-    exit_code = initialize_ora2pg_conf(conf_location=sys.argv[1], dist_conf_location=sys.argv[2])
-
-    print("Elapsed {}ms".format(current_time_millis() - started_at))
-
-    exit(exit_code)
+    try:
+        started_at = current_time_millis()
+        exit_code = initialize_ora2pg_conf(conf_location=sys.argv[1], dist_conf_location=sys.argv[2])
+    except:
+        exit_code = 1
+    finally:
+        print("Elapsed {}ms".format(current_time_millis() - started_at))
+        exit(exit_code)
