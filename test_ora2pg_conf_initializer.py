@@ -52,3 +52,8 @@ class InitializerTest(unittest.TestCase):
             self.assertEqual(len(lines), 1251)
             self.assertTrue(
                 "# with format; DDHH24MMSS::bigint, this depend of your apps usage.\n" in lines)
+
+    def test_scenario_with_non_existing_reference_config(self):
+        self.remove_file(TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
+        exit_code = i.main(TEST_ORA2PG_CONFIG_FILE_PATH, TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
+        self.assertEqual(exit_code, i.EXIT_CODE_ERROR)
