@@ -13,6 +13,20 @@ def current_time_millis():
     return round(time.time() * 1000)
 
 
+def monitored(func):
+    """ Monitoring decorator """
+
+    def do_and_monitor(*args, **kwargs):
+        started = current_time_millis()
+
+        try:
+            return func(*args, **kwargs)
+        finally:
+            print(f"{func}. Elapsed {current_time_millis() - started}ms")
+
+    return do_and_monitor
+
+
 class Ora2PgSetting:
     """ Class that represents an ora2pg configuration setting """
 
@@ -103,18 +117,14 @@ def initialize_ora2pg_conf(conf_location, dist_conf_location):
     return EXIT_CODE_OK
 
 
+@monitored
 def main(conf_location, dist_conf_location):
     """ Main function """
 
     try:
-        started_at = current_time_millis()
-        exit_code = initialize_ora2pg_conf(conf_location, dist_conf_location)
+        return initialize_ora2pg_conf(conf_location, dist_conf_location)
     except OSError:
-        exit_code = EXIT_CODE_ERROR
-    finally:
-        print("Elapsed {}ms".format(current_time_millis() - started_at))
-
-    return exit_code
+        return EXIT_CODE_ERROR
 
 
 if __name__ == '__main__':
