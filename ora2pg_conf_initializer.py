@@ -113,7 +113,8 @@ def main(conf_location, dist_conf_location):
         exit_code = EXIT_CODE_ERROR
     finally:
         print("Elapsed {}ms".format(current_time_millis() - started_at))
-        return exit_code
+
+    return exit_code
 
 
 if __name__ == '__main__':
