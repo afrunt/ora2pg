@@ -14,13 +14,15 @@ class InitializerTest(unittest.TestCase):
     def remove_file(path):
         try:
             os.remove(path)
+            print(f"{path} removed")
         except OSError:
             pass
 
     @staticmethod
-    def copy_text_file(src, dest):
-        with open(src, "r") as src_file, open(dest, "w") as dest_file:
-            dest_file.writelines(src_file.readlines())
+    def copy_text_file(src, destination):
+        with open(src, "r") as src_file, open(destination, "w") as destination_file:
+            destination_file.writelines(src_file.readlines())
+            print(f"File {src} copied to {destination}")
 
     def setUp(self):
         self.remove_file(TEST_ORA2PG_CONFIG_FILE_PATH)
