@@ -19,16 +19,20 @@ class InitializerTest(unittest.TestCase):
             pass
 
     @staticmethod
-    def copy_text_file(src, destination):
+    def copy_file(src, destination):
         with open(src, "r") as src_file, open(destination, "w") as destination_file:
-            destination_file.writelines(src_file.readlines())
+            part = src_file.read(4096)
+            while part:
+                destination_file.write(part)
+                part = src_file.read(4096)
+
             print(f"File {src} copied to {destination}")
 
     def setUp(self):
         self.remove_file(TEST_ORA2PG_CONFIG_FILE_PATH)
         self.remove_file(TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
-        self.copy_text_file(ORA2PG_REFERENCE_CONFIG_FILE_PATH,
-                            TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
+        self.copy_file(ORA2PG_REFERENCE_CONFIG_FILE_PATH,
+                       TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
 
     def doCleanups(self):
         self.remove_file(TEST_ORA2PG_CONFIG_FILE_PATH)
@@ -45,7 +49,7 @@ class InitializerTest(unittest.TestCase):
             self.assertTrue("PG_SCHEMA CLAR\n" in lines)
 
     def test_scenario_with_existing_config(self):
-        self.copy_text_file(ORA2PG_REFERENCE_CONFIG_FILE_PATH, TEST_ORA2PG_CONFIG_FILE_PATH)
+        self.copy_file(ORA2PG_REFERENCE_CONFIG_FILE_PATH, TEST_ORA2PG_CONFIG_FILE_PATH)
         exit_code = i.main(TEST_ORA2PG_CONFIG_FILE_PATH, TEST_ORA2PG_REFERENCE_CONFIG_FILE_PATH)
         self.assertEqual(exit_code, i.EXIT_CODE_OK)
 
